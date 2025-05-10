@@ -81,20 +81,17 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    # environment:
+    #   name: production
     steps:
-      - name: deploying stuff
-        run: echo "Deploying to server..."
-
-      # - name: Checkout code
-      #   uses: actions/checkout@v2
-
-      # - name: Deploy to server
-      #   env:
-      #     SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     SSH_HOST: ${{ secrets.SSH_HOST }}
-      #     SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-      #   run: |
-      #     echo "$SSH_PRIVATE_KEY" > private_key.pem
-      #     chmod 600 private_key.pem
-      #     scp -i private_key.pem -o StrictHostKeyChecking=no -r . $SSH_USERNAME@$SSH_HOST:/path/to/deploy/
-      #     ssh -i private_key.pem -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST 'cd /path/to/deploy && docker-compose up -d'
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          port: ${{ secrets.PROD_PORT }}
+          username: ${{ secrets.PROD_USERNAME }}
+          key: ${{ secrets.PROD_PRIVATE_KEY }}
+          script: |
+            cd app/src
+            git pull
+            sudo systemctl restart api
